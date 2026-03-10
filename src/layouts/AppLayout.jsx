@@ -25,8 +25,8 @@ const AppLayout = () => {
   const pageTitle = useMemo(() => titleMap[location.pathname] || "Enterprise CRM", [location.pathname]);
 
   return (
-    <div className="relative flex min-h-screen gap-4 p-4">
-      <div className="hidden md:block">
+    <div className="relative flex h-screen gap-4 overflow-hidden p-4">
+      <div className="hidden shrink-0 md:sticky md:top-4 md:block md:h-[calc(100vh-2rem)]">
         <AppSidebar />
       </div>
 
@@ -45,7 +45,7 @@ const AppLayout = () => {
         ) : null}
       </AnimatePresence>
 
-      <main className="flex-1">
+      <main className="min-w-0 flex-1 overflow-y-auto pr-1">
         <Topbar title={pageTitle} onMenuClick={toggleSidebar} />
         <Outlet />
       </main>

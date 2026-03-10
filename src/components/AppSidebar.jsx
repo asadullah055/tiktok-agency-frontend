@@ -40,13 +40,13 @@ const linkClass = ({ isActive }) =>
   );
 
 const AppSidebar = ({ onNavigate }) => (
-  <aside className="glass flex h-full w-[290px] flex-col rounded-2xl p-4">
+  <aside className="glass flex h-full w-[290px] shrink-0 flex-col rounded-2xl p-4">
     <div className="mb-8 mt-1">
       <h1 className="font-display text-xl font-bold tracking-tight text-white">NovaCRM Enterprise</h1>
       <p className="mt-1 text-xs text-blue-100/70">Insurance + Partner Operations Cloud</p>
     </div>
 
-    <div className="space-y-6 overflow-y-auto pr-1">
+    <div className="min-h-0 flex-1 space-y-6 overflow-y-auto pr-1">
       {navGroups.map((group) => (
         <section key={group.heading}>
           <p className="mb-2 px-2 text-[11px] uppercase tracking-[0.14em] text-blue-200/50">{group.heading}</p>

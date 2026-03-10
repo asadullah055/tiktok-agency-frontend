@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import PageTransition from "../components/ui/PageTransition";
 import DataTable from "../components/ui/DataTable";
 import ModalForm from "../components/ui/ModalForm";
-import { fetchCreators, saveCreator } from "../services/tiktokService";
+import { fetchCreators, fetchIdealUsernames, saveCreator } from "../services/tiktokService";
 import { dateOnly } from "../utils/formatters";
 
 const inputClass =
@@ -12,13 +12,15 @@ const inputClass =
 
 const CreatorsPage = () => {
   const [creators, setCreators] = useState([]);
+  const [idealUsernames, setIdealUsernames] = useState([]);
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm();
 
   const load = async () => {
     try {
-      const data = await fetchCreators();
-      setCreators(data);
+      const [creatorRows, usernames] = await Promise.all([fetchCreators(), fetchIdealUsernames()]);
+      setCreators(creatorRows);
+      setIdealUsernames(Array.isArray(usernames) ? usernames : []);
     } catch (error) {
       toast.error(error.message || "Could not load partners");
     }
@@ -35,7 +37,6 @@ const CreatorsPage = () => {
         creatorName: username,
         name: username,
         tiktokUsername: username,
-        email: values.email,
         partnerRevenue: Number(values.partnerRevenue || 0),
         partnerRevenueDate: values.partnerRevenueDate
       });
@@ -50,7 +51,6 @@ const CreatorsPage = () => {
 
   const columns = [
     { key: "username", label: "Username", render: (row) => row.tiktokData?.tiktokUsername || "-" },
-    { key: "email", label: "Email", render: (row) => row.email || "-" },
     { key: "partnerRevenue", label: "Revenew", render: (row) => Number(row.tiktokData?.partnerRevenue || 0).toFixed(2) },
     { key: "partnerRevenueDate", label: "Date", render: (row) => dateOnly(row.tiktokData?.partnerRevenueDate) }
   ];
@@ -73,8 +73,14 @@ const CreatorsPage = () => {
 
       <ModalForm open={open} onClose={() => setOpen(false)} title="Add TikTok Partner">
         <form onSubmit={submit} className="space-y-3">
-          <input {...register("tiktokUsername", { required: true })} placeholder="Username" className={inputClass} />
-          <input type="email" {...register("email", { required: true })} placeholder="Email" className={inputClass} />
+          <select {...register("tiktokUsername", { required: true })} className={inputClass}>
+            <option value="">Select ideal partner username</option>
+            {idealUsernames.map((username) => (
+              <option key={username} value={username}>
+                {username}
+              </option>
+            ))}
+          </select>
           <input type="number" min="0" step="0.01" {...register("partnerRevenue")} placeholder="Partner Revenew Received" className={inputClass} />
           <input type="date" {...register("partnerRevenueDate")} className={inputClass} />
           <button type="submit" className="w-full rounded-xl bg-gradient-to-r from-electric to-violet px-4 py-2 text-sm text-white">

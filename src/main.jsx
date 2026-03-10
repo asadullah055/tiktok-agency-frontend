@@ -5,6 +5,19 @@ import { Toaster } from "react-hot-toast";
 import App from "./App";
 import "./index.css";
 
+if (typeof window !== "undefined") {
+  window.addEventListener(
+    "wheel",
+    (event) => {
+      if (!(event.target instanceof Element)) return;
+      const numberInput = event.target.closest('input[type="number"]');
+      if (!numberInput) return;
+      event.preventDefault();
+    },
+    { passive: false }
+  );
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>

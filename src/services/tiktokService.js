@@ -10,6 +10,11 @@ export const saveCreator = async (payload) => {
   return data.data;
 };
 
+export const fetchIdealUsernames = async () => {
+  const { data } = await apiClient.get("/tiktok/ideal-usernames");
+  return data.data;
+};
+
 export const fetchDailyData = async (params = {}) => {
   const { data } = await apiClient.get("/tiktok/daily-data", { params });
   return data.data;

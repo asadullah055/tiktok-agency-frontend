@@ -5,7 +5,7 @@ const Topbar = ({ title, onMenuClick }) => (
     <div className="flex items-center gap-3">
       <button
         type="button"
-        className="rounded-lg border border-blue-300/20 p-2 text-blue-100 md:hidden"
+        className="rounded-lg border border-blue-300/20 p-2 text-orange-400 md:hidden"
         onClick={onMenuClick}
       >
         <Menu size={16} />
@@ -15,13 +15,13 @@ const Topbar = ({ title, onMenuClick }) => (
 
     <div className="flex items-center gap-3">
       <label className="hidden items-center gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-2 md:flex">
-        <Search size={14} className="text-blue-100/70" />
+        <Search size={14} className="text-orange-400" />
         <input
           className="w-48 bg-transparent text-sm text-white placeholder:text-blue-100/50 focus:outline-none"
           placeholder="Quick search..."
         />
       </label>
-      <button type="button" className="rounded-xl border border-white/10 p-2 text-blue-100 hover:border-blue-300/35">
+      <button type="button" className="rounded-xl border border-white/10 p-2 text-orange-400 hover:border-blue-300/35">
         <Bell size={16} />
       </button>
     </div>

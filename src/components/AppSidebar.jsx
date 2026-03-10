@@ -42,8 +42,15 @@ const linkClass = ({ isActive }) =>
 const AppSidebar = ({ onNavigate }) => (
   <aside className="glass flex h-full w-[290px] shrink-0 flex-col rounded-2xl p-4">
     <div className="mb-8 mt-1">
-      <h1 className="font-display text-xl font-bold tracking-tight text-white">NovaCRM Enterprise</h1>
-      <p className="mt-1 text-xs text-blue-100/70">Insurance + Partner Operations Cloud</p>
+      <div className="flex items-center gap-3">
+        <img
+          src="/images/nebulanexus-logo.webp"
+          alt="Nebulanexus"
+          className="h-10 w-10 rounded-xl border border-blue-400/40 object-cover"
+        />
+        <h1 className="font-display text-xl font-bold tracking-tight text-white">Nebulanexus</h1>
+      </div>
+      <p className="mt-2 text-xs text-blue-100/70">Insurance + Partner Operations Cloud</p>
     </div>
 
     <div className="min-h-0 flex-1 space-y-6 overflow-y-auto pr-1">
@@ -55,7 +62,7 @@ const AppSidebar = ({ onNavigate }) => (
               const Icon = item.icon;
               return (
                 <NavLink key={item.path} to={item.path} end className={linkClass} onClick={onNavigate}>
-                  <Icon size={16} className="text-electric transition-transform duration-300 group-hover:scale-110" />
+                  <Icon size={16} className="text-orange-400 transition-transform duration-300 group-hover:scale-110" />
                   <span>{item.label}</span>
                 </NavLink>
               );

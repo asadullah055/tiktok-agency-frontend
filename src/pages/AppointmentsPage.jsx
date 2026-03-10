@@ -41,6 +41,16 @@ const getOrCreateCalendarConnectionKey = () => {
 const inputClass =
   "w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-blue-100/45 focus:border-electric/60 focus:outline-none";
 
+const filterUpcomingAppointments = (rows = []) => {
+  const now = Date.now();
+  return rows
+    .filter((row) => {
+      const timestamp = new Date(row?.scheduledFor).getTime();
+      return Number.isFinite(timestamp) && timestamp >= now;
+    })
+    .sort((left, right) => new Date(left.scheduledFor).getTime() - new Date(right.scheduledFor).getTime());
+};
+
 const AppointmentsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [appointments, setAppointments] = useState([]);
@@ -64,9 +74,9 @@ const AppointmentsPage = () => {
 
       if (googleStatus?.connected) {
         const googleAppointments = await fetchGoogleCalendarAppointments(connectionKey, { bookedOnly: true });
-        setAppointments(googleAppointments);
+        setAppointments(filterUpcomingAppointments(googleAppointments));
       } else {
-        setAppointments(appointmentsData);
+        setAppointments(filterUpcomingAppointments(appointmentsData));
       }
     } catch (error) {
       toast.error(error.message || "Failed to load appointments");

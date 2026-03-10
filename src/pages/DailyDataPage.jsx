@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { Copy, Eye } from "lucide-react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import ModalForm from "../components/ui/ModalForm";
 import DataTable from "../components/ui/DataTable";
+import ModalForm from "../components/ui/ModalForm";
 import PageTransition from "../components/ui/PageTransition";
 import { getIdealUsers } from "../services/idealUserService";
 import { fetchDailyData } from "../services/tiktokService";
@@ -25,15 +25,29 @@ const wholeNumber = new Intl.NumberFormat("en", {
   maximumFractionDigits: 0
 });
 
+const decimalNumber = new Intl.NumberFormat("en", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2
+});
+
 const formatTikTokUrl = (username) => `https://www.tiktok.com/@${String(username || "").replace(/^@/, "").trim()}`;
-const roundNumber = (value) => Math.round(Number(value || 0));
-const sumFromDays = (days, field) => days.reduce((sum, day) => sum + roundNumber(day?.[field]), 0);
+const toNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+const sumFromDays = (days, field) => days.reduce((sum, day) => sum + toNumber(day?.[field]), 0);
+const getLast30DayRows = (days = []) =>
+  [...days]
+    .filter((day) => day?.date)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 30);
 
 const DailyDataPage = () => {
   const [demoRows, setDemoRows] = useState([]);
   const [idealRows, setIdealRows] = useState([]);
   const [activeView, setActiveView] = useState("demo");
   const [selectedIdealRow, setSelectedIdealRow] = useState(null);
+  const recent30DayRows = selectedIdealRow ? getLast30DayRows(selectedIdealRow.days) : [];
 
   const loadDemoRows = async () => {
     try {
@@ -65,15 +79,15 @@ const DailyDataPage = () => {
         id: user._id || user.id || `ideal-user-${index}`,
         name: user.name || "-",
         username: user.username || `ideal-user-${index + 1}`,
-        totalDiamonds: safeDays.length ? sumFromDays(safeDays, "diamonds") : roundNumber(user.totalDiamonds ?? user.diamonds),
-        totalIncome: safeDays.length ? sumFromDays(safeDays, "income") : roundNumber(user.totalIncome ?? user.revenew),
-        dbTotalDiamonds: roundNumber(user.totalDiamonds ?? user.diamonds),
-        dbTotalIncome: roundNumber(user.totalIncome ?? user.revenew),
+        totalDiamonds: safeDays.length ? sumFromDays(safeDays, "diamonds") : toNumber(user.totalDiamonds ?? user.diamonds),
+        totalIncome: safeDays.length ? sumFromDays(safeDays, "income") : toNumber(user.totalIncome ?? user.revenew),
+        dbTotalDiamonds: toNumber(user.totalDiamonds ?? user.diamonds),
+        dbTotalIncome: toNumber(user.totalIncome ?? user.revenew),
         daysCount: Number(user.daysCount ?? safeDays.length),
         days: safeDays.map((day) => ({
           ...day,
-          income: roundNumber(day?.income),
-          diamonds: roundNumber(day?.diamonds)
+          income: toNumber(day?.income),
+          diamonds: toNumber(day?.diamonds)
         }))
       };
     });
@@ -126,7 +140,7 @@ const DailyDataPage = () => {
       label: "Total Diamonds",
       render: (row) => <span title={wholeNumber.format(row.totalDiamonds)}>{compactNumber.format(row.totalDiamonds)}</span>
     },
-    { key: "totalIncome", label: "Total USD", render: (row) => wholeNumber.format(row.totalIncome) },
+    { key: "totalIncome", label: "Total USD", render: (row) => decimalNumber.format(row.totalIncome) },
     { key: "daysCount", label: "Days" },
     {
       key: "details",
@@ -153,11 +167,10 @@ const DailyDataPage = () => {
             <button
               type="button"
               onClick={() => setActiveView("demo")}
-              className={`rounded-xl px-4 py-2 text-sm ${
-                activeView === "demo"
+              className={`rounded-xl px-4 py-2 text-sm ${activeView === "demo"
                   ? "bg-gradient-to-r from-electric to-violet text-white"
                   : "border border-white/15 bg-white/5 text-blue-100 hover:border-electric/55"
-              }`}
+                }`}
             >
               Demo Creator
             </button>
@@ -167,11 +180,10 @@ const DailyDataPage = () => {
                 loadIdealRows().catch((error) => toast.error(error.message || "Failed to load ideal users"));
                 setActiveView("ideal");
               }}
-              className={`rounded-xl px-4 py-2 text-sm ${
-                activeView === "ideal"
+              className={`rounded-xl px-4 py-2 text-sm ${activeView === "ideal"
                   ? "bg-gradient-to-r from-electric to-violet text-white"
                   : "border border-white/15 bg-white/5 text-blue-100 hover:border-electric/55"
-              }`}
+                }`}
             >
               Ideal Creator
             </button>
@@ -225,27 +237,63 @@ const DailyDataPage = () => {
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-electric/20 to-violet/10 p-5">
                 <p className="text-xs uppercase tracking-[0.14em] text-blue-100/70">Last 30 Days Income</p>
-                <p className="mt-2 text-3xl font-semibold text-white">${wholeNumber.format(selectedIdealRow.totalIncome)}</p>
+                <p className="mt-2 text-3xl font-semibold text-white">${decimalNumber.format(selectedIdealRow.totalIncome)}</p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-violet/15 to-electric/10 p-5">
                 <p className="text-xs uppercase tracking-[0.14em] text-blue-100/70">Last 30 Days Diamonds</p>
-                <p className="mt-2 text-3xl font-semibold text-white">{wholeNumber.format(selectedIdealRow.totalDiamonds)}</p>
+                <p className="mt-2 text-3xl font-semibold text-white" title={wholeNumber.format(selectedIdealRow.totalDiamonds)}>
+                  {compactNumber.format(selectedIdealRow.totalDiamonds)}
+                </p>
               </div>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
               <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
                 <p className="text-xs uppercase tracking-[0.14em] text-blue-100/55">Total USD</p>
-                <p className="mt-1 text-sm text-slate-100">${wholeNumber.format(selectedIdealRow.dbTotalIncome)}</p>
+                <p className="mt-1 text-sm text-slate-100">${decimalNumber.format(selectedIdealRow.dbTotalIncome)}</p>
               </div>
               <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
                 <p className="text-xs uppercase tracking-[0.14em] text-blue-100/55">Total Diamonds</p>
-                <p className="mt-1 text-sm text-slate-100">{wholeNumber.format(selectedIdealRow.dbTotalDiamonds)}</p>
+                <p className="mt-1 text-sm text-slate-100" title={wholeNumber.format(selectedIdealRow.dbTotalDiamonds)}>
+                  {compactNumber.format(selectedIdealRow.dbTotalDiamonds)}
+                </p>
               </div>
               <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-3">
                 <p className="text-xs uppercase tracking-[0.14em] text-blue-100/55">Total Days</p>
                 <p className="mt-1 text-sm text-slate-100">{wholeNumber.format(selectedIdealRow.daysCount)}</p>
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs uppercase tracking-[0.14em] text-blue-100/55">Last 30 Days Details</p>
+                <p className="text-xs text-blue-100/60">{recent30DayRows.length} entries</p>
+              </div>
+
+              {recent30DayRows.length ? (
+                <div className="max-h-[38vh] overflow-y-auto rounded-xl border border-white/10">
+                  <div className="grid grid-cols-3 border-b border-white/10 bg-white/5 px-3 py-2 text-[11px] uppercase tracking-[0.12em] text-blue-100/65">
+                    <span>Date</span>
+                    <span>Income (USD)</span>
+                    <span>Diamonds</span>
+                  </div>
+                  <div className="divide-y divide-white/10">
+                    {recent30DayRows.map((day, index) => (
+                      <div key={`${day.date}-${index}`} className="grid grid-cols-3 px-3 py-2 text-sm text-slate-100">
+                        <span>{day.date}</span>
+                        <span>${decimalNumber.format(toNumber(day.income))}</span>
+                        <span title={wholeNumber.format(toNumber(day.diamonds))}>
+                          {compactNumber.format(toNumber(day.diamonds))}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-4 text-sm text-blue-100/70">
+                  No 30-day data found for this creator.
+                </div>
+              )}
             </div>
           </div>
         ) : null}
